@@ -7,7 +7,7 @@ from telegram import LoginUrl, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (Updater, CommandHandler, CallbackQueryHandler, MessageHandler, 
                         InlineQueryHandler, Filters)
 
-from app.bot.models import ClickupUser, ClickupWorkspace, TelegramUser, Message
+from .models import ClickupUser, TelegramUser, Message
 
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)

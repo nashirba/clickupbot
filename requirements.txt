@@ -4,8 +4,10 @@ astroid==2.4.2
 Babel==2.8.0
 certifi==2020.6.20
 Django==3.1.1
+django-environ==0.4.5
 dnspython==2.0.0
 email-validator==1.1.1
+environ==1.0
 Flask==1.0.2
 Flask-BabelEx==0.9.4
 Flask-Compress==1.4.0
@@ -18,6 +20,7 @@ Flask-Principal==0.4.0
 Flask-Security-Too==3.4.4
 Flask-SQLAlchemy==2.4.1
 Flask-WTF==0.14.3
+gunicorn==20.0.4
 isort==5.5.3
 itsdangerous==1.1.0
 Jinja2==2.11.2

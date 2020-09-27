@@ -20,7 +20,7 @@ ALLOWED_HOSTS = ['*', 'localhost']
 BOT_TOKEN = env.str('BOT_TOKEN')
 
 # ClickUp settings
-REDIRECT_URL = env.str('REDIRECT_URL')
+REDIRECT_URI = env.str('REDIRECT_URI')
 CLICKUP_CLIENT_ID = env.str('CLICKUP_CLIENT_ID')
 CLICKUP_SECRET = env.str('CLICKUP_SECRET')
 
@@ -33,6 +33,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'apps.bot',
 ]
 
 MIDDLEWARE = [
@@ -70,7 +72,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 DATABASES = {
-    'defualt': env.db()
+    'default': env.db(),
 }
 
 

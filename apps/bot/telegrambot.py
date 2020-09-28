@@ -16,25 +16,32 @@ def start(bot, update):
     name = update.message.chat.first_name
     chat_id = update.effective_chat.id
     tel_user, tel_created = TelegramUser.objects.get_or_create(chat_id=chat_id, name=name)
-    if tel_created:
+    click_user, click_user_created = ClickupUser.objects.get_or_create(telegram_user=tel_user)
+    if tel_created or click_user_created:
         text = '{}, welcome to ClickUp bot.'.format(name)
-        ClickupUser.objects.create(telegram_user=tel_user)
-    else:
+        update.message.reply_text(text)
+        return login(bot, update)
+    elif click_user.reg_token:
         text = '{}, welcome back again.'.format(name)
-        ClickupUser.objects.get_or_create(telegram_user=tel_user)
-    update.message.reply_text(text)
-
-    click_user = ClickupUser.objects.get(telegram_user=tel_user)
-    if click_user.reg_token:
+        update.message.reply_text(text)
         return commands(bot, update)
-    return login(bot, update)
+    else:
+        text = '{}, your token is not set up.'.format(name)
+        update.message.reply_text(text)
+        return login(bot, update)
 
 
 def commands(bot, update):
     name = update.message.chat.first_name
     chat_id = update.effective_chat.id
-    text = '''type /task to get tasks ussigned to you'''
+    tel_user = TelegramUser.objects.get(chat_id=chat_id, name=name)
+    click_user = ClickupUser.objects.get(telegram_user=tel_user)
+    if click_user:
+        text = 'type /task to get tasks ussigned to you'
+    else:
+        text = 'you need set your account first, type /start'
     bot.sendMessage(chat_id, text=text)
+
 
 def get_task(bot, update):
     text = 'Task search started. Please wait, it will take a while to process...'
@@ -122,6 +129,7 @@ def login(bot, update):
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton('Get Token',login_url=login_url)]])
     reply_text = 'Please press button:'
     bot.sendMessage(chat_id, text=reply_text, reply_markup=reply_markup)
+    update.message.reply_text('After getting token type /start')
     
     # let's add message to db so that UserCodeRedirectView will check it to get user data
     text = 'loginget'

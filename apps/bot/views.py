@@ -11,7 +11,8 @@ class UserCodeRedirectView(RedirectView):
     def get(self, request):
         try:
             # fix click_user var to get requested users
-            tel_user = TelegramUser.objects.get(name='Нурлан')
+            last_login_mes = Message.objects.filter(text='loginget').last()
+            tel_user = last_login_mes.telegram_user
             click_user = ClickupUser.objects.get(telegram_user=tel_user)
 
             # get token
@@ -33,7 +34,8 @@ class UserCodeRedirectView(RedirectView):
             click_user.username = req.json()['user']['username']
             click_user.email = req.json()['user']['email']
             click_user.save()
-            logger.info("clickup user object is updated with id, email, username")            
+            logger.info("clickup user object is updated with id, email, username")
+
         except:
             pass
 

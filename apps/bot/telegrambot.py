@@ -121,7 +121,13 @@ def login(bot, update):
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton('Get Token',login_url=login_url)]])
     reply_text = 'Please press button:'
     bot.sendMessage(chat_id, text=reply_text, reply_markup=reply_markup)
-    update.message.reply_text('After getting token type /start again.')
+    
+    # let's add message to db so that UserCodeRedirectView will check it to get user data
+    text = 'loginget'
+    name = update.message.chat.first_name
+    tel_user = TelegramUser.objects.get(chat_id=chat_id, name=name)
+    mes = Message(telegram_user=tel_user, text=text)
+    mes.save()
 
 
 def error(bot, update, error):

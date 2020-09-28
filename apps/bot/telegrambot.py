@@ -18,14 +18,15 @@ def start(bot, update):
     name = update.message.chat.first_name
     chat_id = update.effective_chat.id
     tel_user, tel_created = TelegramUser.objects.get_or_create(chat_id=chat_id, name=name)
+    print('-------------------')
+    print(tel_created)
     if tel_created:
-        print('new telegram user')
         text = '{}, welcome to ClickUp bot.'.format(name)
         ClickupUser.objects.create(telegram_user=tel_user)
-        print('clickup user instance created')
     else:
         text = '{}, welcome back again.'.format(name)
-    bot.sendMessage(chat_id, text=text)
+    # bot.sendMessage(chat_id, text=text)
+    update.message.reply_text(text)
 
     click_user = ClickupUser.objects.get(telegram_user=tel_user)
     if click_user.reg_token:
@@ -125,6 +126,7 @@ def login(bot, update):
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton('Get Token',login_url=login_url)]])
     reply_text = 'Please press button:'
     bot.sendMessage(chat_id, text=reply_text, reply_markup=reply_markup)
+    update.message.reply_text('After getting token type /start again.')
 
 
 def error(bot, update, error):

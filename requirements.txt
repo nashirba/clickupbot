@@ -9,6 +9,7 @@ cryptography==3.1.1
 decorator==4.4.2
 Django==3.1.1
 django-environ==0.4.5
+django-telegrambot==1.0.1
 dnspython==2.0.0
 email-validator==1.1.1
 environ==1.0

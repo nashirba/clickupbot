@@ -91,15 +91,18 @@ def get_task(bot, update):
                         # result_task_dict['date_created'] = task_item['date_created']
                         result_task_dict['creator'] = task_item['creator']['username']
                         result_task.append(result_task_dict)
-    for task_number, result_task_item in enumerate(result_task, 1):
-        text = f'''Task #{task_number}
+    if result_task:
+        for task_number, result_task_item in enumerate(result_task, 1):
+            text = f'''Task #{task_number}
 Task name: {result_task_item['name']}.
 Content: {result_task_item['text_content']}.
 Description: {result_task_item['description']}.
 Status: {result_task_item['status']}.
 Created by {result_task_item['creator']}.
 '''
-        update.message.reply_text(text)
+            update.message.reply_text(text)
+    else:
+        update.message.reply_text('You dont have any task, lucky you )')
 
 
 def help(bot, update):

@@ -34,13 +34,14 @@ def start(bot, update):
 def commands(bot, update):
     name = update.message.chat.first_name
     chat_id = update.effective_chat.id
-    tel_user = TelegramUser.objects.get(chat_id=chat_id, name=name)
-    click_user = ClickupUser.objects.get(telegram_user=tel_user)
-    if click_user:
+    try:
+        tel_user = TelegramUser.objects.get(chat_id=chat_id, name=name)
+        click_user = ClickupUser.objects.get(telegram_user=tel_user)
         text = 'type /task to get tasks ussigned to you'
-    else:
+    except:
         text = 'you need set your account first, type /start'
-    bot.sendMessage(chat_id, text=text)
+    finally:
+        bot.sendMessage(chat_id, text=text)
 
 
 def get_task(bot, update):

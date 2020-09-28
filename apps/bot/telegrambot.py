@@ -21,6 +21,7 @@ def start(bot, update):
         ClickupUser.objects.create(telegram_user=tel_user)
     else:
         text = '{}, welcome back again.'.format(name)
+        ClickupUser.objects.get_or_create(telegram_user=tel_user)
     update.message.reply_text(text)
 
     click_user = ClickupUser.objects.get(telegram_user=tel_user)
@@ -96,8 +97,8 @@ def help(bot, update):
     name = update.message.chat.first_name
     chat_id = update.effective_chat.id
     text = '''{}, this bot is integrated into ClickUp application.
-Type /start to initiate or 
-type /commands to see all available commands'''.format(name)
+type /start to initiate
+type /commands to see all commands'''.format(name)
     bot.sendMessage(chat_id, text=text)
 
 
@@ -108,7 +109,7 @@ def do_echo(bot, update):
     tel_user, _ = TelegramUser.objects.get_or_create(chat_id=chat_id, defaults={'name':name})
     mes = Message(telegram_user=tel_user, text=text)
     mes.save()
-    reply_text = f'{name}, please type /start to initiate'
+    reply_text = 'Please type /start to initiate or type /help for more info'
     bot.sendMessage(chat_id, text=reply_text)
 
 

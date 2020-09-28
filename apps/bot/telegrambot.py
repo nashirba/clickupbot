@@ -39,7 +39,8 @@ def commands(bot, update):
         click_user = ClickupUser.objects.get(telegram_user=tel_user)
         text = 'type /task to get tasks ussigned to you'
     except:
-        text = 'you need set your account first, type /start'
+        text = '''you need set your account first, 
+type /start'''
     finally:
         bot.sendMessage(chat_id, text=text)
 

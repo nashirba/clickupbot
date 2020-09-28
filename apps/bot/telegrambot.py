@@ -29,12 +29,18 @@ def start(bot, update):
 
     click_user = ClickupUser.objects.get(telegram_user=tel_user)
     if click_user.reg_token:
-        return command_list(bot, update)
+        return commands(bot, update)
     return login(bot, update)
 
 
-def command_list(bot, update):
-    text = 'Task search started. Please wait it will take a while to process'
+def commands(bot, update):
+    name = update.message.chat.first_name
+    chat_id = update.effective_chat.id
+    text = '''type /task to get all tasks ussinged to you'''
+    bot.sendMessage(chat_id, text=text)
+
+def get_task(bot, update):
+    text = 'Task search started. Please wait, it will take a while to process...'
     chat_id = update.effective_chat.id
     bot.sendMessage(chat_id, text=text)
     tel_user = TelegramUser.objects.get(chat_id=chat_id)
@@ -79,12 +85,24 @@ def command_list(bot, update):
                         # result_task_dict['date_created'] = task_item['date_created']
                         result_task_dict['creator'] = task_item['creator']['username']
                         result_task.append(result_task_dict)
-    for result_task_item in result_task:
-        update.message.reply_text(result_task_item)
+    for task_number, result_task_item in enumerate(result_task, 1):
+        text = f'''Task #{task_number}
+Task name: {result_task_item['name']}.
+Content: {result_task_item['text_content']}.
+Description: {result_task_item['description']}.
+Status: {result_task_item['status']}.
+Created by {result_task_item['creator']}.
+'''
+        update.message.reply_text(text)
 
 
 def help(bot, update):
-    bot.sendMessage(update.message.chat_id, text='Help!')
+    name = update.message.chat.first_name
+    chat_id = update.effective_chat.id
+    text = '''{}, this bot is integrated into ClickUp application.
+Type /start to initiate or 
+type /commands to see all available commands'''.format(name)
+    bot.sendMessage(chat_id, text=text)
 
 
 def do_echo(bot, update):
@@ -123,6 +141,8 @@ def main():
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("login", login))
     dp.add_handler(CommandHandler("help", help))
+    dp.add_handler(CommandHandler("commands", commands))
+    dp.add_handler(CommandHandler("task", get_task))
 
     message_handler = MessageHandler(Filters.text, do_echo)
     dp.add_handler(message_handler)

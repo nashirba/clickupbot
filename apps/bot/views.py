@@ -10,13 +10,12 @@ class UserCodeRedirectView(RedirectView):
 
     def get(self, request):
         try:
-            click_access_code = request.GET.get('code', None)
-
             # fix click_user var to get requested users
             tel_user = TelegramUser.objects.get(name='Нурлан')
             click_user = ClickupUser.objects.get(telegram_user=tel_user)
 
             # get token
+            click_access_code = request.GET.get('code', None)
             click_user.reg_code = click_access_code
             client_id = settings.CLICKUP_CLIENT_ID
             client_secret = settings.CLICKUP_SECRET

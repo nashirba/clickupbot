@@ -3,7 +3,6 @@ import requests
 
 from telegram import LoginUrl, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CommandHandler, MessageHandler, Filters
-# from telegram.ext import (Updater, CallbackQueryHandler, InlineQueryHandler)
 from django.conf import settings
 from django_telegrambot.apps import DjangoTelegramBot
 
@@ -12,20 +11,16 @@ from .models import ClickupUser, Message, TelegramUser
 
 logger = logging.getLogger(__name__)
 
-# Define a few command handlers. These usually take the two arguments bot and
-# update. Error handlers also receive the raised TelegramError object in error.
+
 def start(bot, update):
     name = update.message.chat.first_name
     chat_id = update.effective_chat.id
     tel_user, tel_created = TelegramUser.objects.get_or_create(chat_id=chat_id, name=name)
-    print('-------------------')
-    print(tel_created)
     if tel_created:
         text = '{}, welcome to ClickUp bot.'.format(name)
         ClickupUser.objects.create(telegram_user=tel_user)
     else:
         text = '{}, welcome back again.'.format(name)
-    # bot.sendMessage(chat_id, text=text)
     update.message.reply_text(text)
 
     click_user = ClickupUser.objects.get(telegram_user=tel_user)
@@ -37,7 +32,7 @@ def start(bot, update):
 def commands(bot, update):
     name = update.message.chat.first_name
     chat_id = update.effective_chat.id
-    text = '''type /task to get all tasks ussinged to you'''
+    text = '''type /task to get tasks ussigned to you'''
     bot.sendMessage(chat_id, text=text)
 
 def get_task(bot, update):

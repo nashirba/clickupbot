@@ -7,8 +7,10 @@ cffi==1.14.3
 chardet==3.0.4
 cryptography==3.1.1
 decorator==4.4.2
+dj-database-url==0.5.0
 Django==3.1.1
 django-environ==0.4.5
+django-heroku==0.3.1
 django-telegrambot==1.0.1
 dnspython==2.0.0
 email-validator==1.1.1
@@ -36,6 +38,7 @@ mccabe==0.6.1
 passlib==1.7.2
 pgadmin4==4.26
 psutil==5.7.2
+psycopg2==2.8.6
 psycopg2-binary==2.8.6
 pyasn1==0.4.8
 pycparser==2.20
@@ -54,5 +57,6 @@ toml==0.10.1
 tornado==6.0.4
 urllib3==1.25.10
 Werkzeug==1.0.1
+whitenoise==5.2.0
 wrapt==1.12.1
 WTForms==2.2.1

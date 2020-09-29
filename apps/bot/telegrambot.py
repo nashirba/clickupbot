@@ -1,8 +1,8 @@
 import logging
 import requests
 
-from telegram import LoginUrl, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import CommandHandler, MessageHandler, Filters
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import CommandHandler, CallbackQueryHandler, MessageHandler, Filters
 from django.conf import settings
 from django_telegrambot.apps import DjangoTelegramBot
 
@@ -13,44 +13,75 @@ logger = logging.getLogger(__name__)
 
 
 def start(bot, update):
-    name = update.message.chat.first_name
+    if update.callback_query:
+        name = update.callback_query.message.chat.first_name
+    else:
+        name = update.message.chat.first_name
     chat_id = update.effective_chat.id
     tel_user, tel_created = TelegramUser.objects.get_or_create(chat_id=chat_id, name=name)
     click_user, click_user_created = ClickupUser.objects.get_or_create(telegram_user=tel_user)
     if tel_created or click_user_created:
-        text = '{}, welcome to ClickUp bot.'.format(name)
-        update.message.reply_text(text)
+        text = '{}, welcome to ClickUp bot 🎉'.format(name)
+        bot.sendMessage(chat_id, text=text)
         return login(bot, update)
     elif click_user.reg_token:
-        text = '{}, welcome back again.'.format(name)
-        update.message.reply_text(text)
+        text = '{}, welcome back again 💫'.format(name)
+        bot.sendMessage(chat_id, text=text)
         return commands(bot, update)
     else:
-        text = '{}, your token is not set up.'.format(name)
-        update.message.reply_text(text)
+        text = '{}, your 🔑token is not set up ⛔️'.format(name)
+        bot.sendMessage(chat_id, text=text)
         return login(bot, update)
 
 
 def commands(bot, update):
-    name = update.message.chat.first_name
+    if update.callback_query:
+        name = update.callback_query.message.chat.first_name
+    else:
+        name = update.message.chat.first_name
     chat_id = update.effective_chat.id
     try:
+        # check if users are created already
         tel_user = TelegramUser.objects.get(chat_id=chat_id, name=name)
         click_user = ClickupUser.objects.get(telegram_user=tel_user)
-        text = 'type /task to get tasks ussigned to you'
+        # lets return avaiable commands
+        keyboard = [[InlineKeyboardButton("Get Task", callback_data='task')]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        # update.message.reply_text('Please choose commands ⤵️:', reply_markup=reply_markup)
+        text = 'Please choose commands ⤵️:'
+        bot.sendMessage(chat_id, text=text, reply_markup=reply_markup)
     except:
-        text = '''you need set your account first, 
-type /start'''
-    finally:
+        text = '''🙅‍♂️ you need set your account first⛔️'''
         bot.sendMessage(chat_id, text=text)
+        return start(bot, update)
+
+
+def button(bot, update):
+    query = update.callback_query
+    # CallbackQueries need to be answered, even if no notification to the user is needed
+    # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
+    query.answer()
+    if query.data == 'task':
+        get_task(bot, update)
+    if query.data == 'start':
+        start(bot, update)
 
 
 def get_task(bot, update):
-    text = 'Task search started. Please wait, it will take a while to process...'
-    chat_id = update.effective_chat.id
+    try:
+        chat_id = update.effective_chat.id
+        tel_user = TelegramUser.objects.get(chat_id=chat_id)
+        click_user = ClickupUser.objects.get(telegram_user=tel_user)
+    except:
+        text = 'You didnt set your account yet.'
+        bot.sendMessage(chat_id, text=text)
+        return start(bot, update)
+    if not click_user.reg_token:
+        text = '{}, your 🔑token is not set up ⛔️'.format(tel_user.name)
+        bot.sendMessage(chat_id, text=text)
+        return login(bot, update)
+    text = 'Task search started 🔎. Please wait, it will take a while to process...'
     bot.sendMessage(chat_id, text=text)
-    tel_user = TelegramUser.objects.get(chat_id=chat_id)
-    click_user = ClickupUser.objects.get(telegram_user=tel_user)
     team_url = 'https://api.clickup.com/api/v2/team'
     headers = {'Authorization': click_user.reg_token}
     req = requests.get(team_url, headers=headers)
@@ -75,6 +106,8 @@ def get_task(bot, update):
         req = requests.get(list_url, headers=headers)
         for i in req.json()['lists']:
             clickup_lists_items.append(i['id'])
+    text = "I'm still looking 👀"
+    bot.sendMessage(chat_id, text=text)
     result_task = []
     for clickup_lists_item in clickup_lists_items:
         task_url = f'https://api.clickup.com/api/v2/list/{clickup_lists_item}/task?archived=false'
@@ -92,17 +125,20 @@ def get_task(bot, update):
                         result_task_dict['creator'] = task_item['creator']['username']
                         result_task.append(result_task_dict)
     if result_task:
+        text = f'Done, you have {len(result_task)} 📝message(s)'
+        bot.sendMessage(chat_id, text=text)
         for task_number, result_task_item in enumerate(result_task, 1):
-            text = f'''Task #{task_number}
-Task name: {result_task_item['name']}.
-Content: {result_task_item['text_content']}.
-Description: {result_task_item['description']}.
-Status: {result_task_item['status']}.
-Created by {result_task_item['creator']}.
+            text = f'''📌 task #{task_number}
+🔘 name: {result_task_item['name']}.
+▫️ content: {result_task_item['text_content']}.
+▫️ description: {result_task_item['description']}.
+▫️ status: {result_task_item['status']}.
+▫️ created by {result_task_item['creator']}.
 '''
-            update.message.reply_text(text)
+            bot.sendMessage(chat_id, text=text)
     else:
-        update.message.reply_text('You dont have any task, lucky you )')
+        text = "You don't have any task, lucky you 🤩"
+        bot.sendMessage(chat_id, text=text)
 
 
 def help(bot, update):
@@ -115,26 +151,28 @@ type /commands to see all commands'''.format(name)
 
 
 def do_echo(bot, update):
-    chat_id = update.message.chat.id
+    chat_id = update.effective_chat.id
     text = update.message.text
     name = update.message.chat.first_name
     tel_user, _ = TelegramUser.objects.get_or_create(chat_id=chat_id, defaults={'name':name})
     mes = Message(telegram_user=tel_user, text=text)
     mes.save()
-    reply_text = 'Please type /start to initiate or type /help for more info'
-    bot.sendMessage(chat_id, text=reply_text)
+
+    # lets return avaiable commands
+    keyboard = [[InlineKeyboardButton("Start", callback_data='start')],
+                [InlineKeyboardButton("Get Task", callback_data='task')]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    update.message.reply_text('Please choose commands ⤵️:', reply_markup=reply_markup)
 
 
 def login(bot, update):
-    chat_id = update.message.chat.id
+    chat_id = update.effective_chat.id
     client_id = settings.CLICKUP_CLIENT_ID
     redirect_uri = settings.REDIRECT_URI
     url = f'https://app.clickup.com/api?client_id={client_id}&redirect_uri={redirect_uri}?chat_id={chat_id}'
-    login_url = LoginUrl(url=url, bot_username='test_clickup_bot')
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton('Get Token',login_url=login_url)]])
-    reply_text = 'Please press button:'
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton('Get Token',url=url)]])
+    reply_text = 'Please press button ⤵️:'
     bot.sendMessage(chat_id, text=reply_text, reply_markup=reply_markup)
-    update.message.reply_text('After getting token type /start')
     
     # let's add message to db so that UserCodeRedirectView will check it to get user data
     text = 'loginget'
@@ -160,6 +198,8 @@ def main():
     dp.add_handler(CommandHandler("help", help))
     dp.add_handler(CommandHandler("commands", commands))
     dp.add_handler(CommandHandler("task", get_task))
+    dp.add_handler(CallbackQueryHandler(button))
+
 
     message_handler = MessageHandler(Filters.text, do_echo)
     dp.add_handler(message_handler)

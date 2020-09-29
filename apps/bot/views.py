@@ -26,6 +26,18 @@ class UserCodeRedirectView(RedirectView):
             click_user.reg_token = clickup_token
             click_user.save()
 
+            # lets notify user of susseccful get token action
+            text = 'Your 🔑token has been successfully saved ✅ \nPlease type /start again'
+            data = {
+                "chat_id": tel_user.chat_id,
+                "text": text,
+                "parse_mode": "Markdown",
+                }
+            telegram_url = "https://api.telegram.org/bot"
+            response = requests.post(
+                f"{telegram_url}{settings.BOT_TOKEN}/sendMessage", data=data
+            )
+
             # get user
             auth_user_url = 'https://api.clickup.com/api/v2/user'
             headers = {'Authorization': clickup_token}

@@ -37,7 +37,7 @@ class Message(models.Model):
     created_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'Message {self.pk} from {self.telegram_user}'
+        return f'Message #{self.pk} from {self.telegram_user} on {self.created_date}'
 
     class Meta:
         verbose_name = 'Message'

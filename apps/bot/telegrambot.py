@@ -48,7 +48,6 @@ def commands(bot, update):
         # lets return avaiable commands
         keyboard = [[InlineKeyboardButton("Get Task", callback_data='task')]]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        # update.message.reply_text('Please choose commands ⤵️:', reply_markup=reply_markup)
         text = 'Please choose commands ⤵️:'
         bot.sendMessage(chat_id, text=text, reply_markup=reply_markup)
     except:

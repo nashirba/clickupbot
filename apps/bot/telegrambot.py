@@ -46,8 +46,12 @@ def commands(bot, update):
         tel_user = TelegramUser.objects.get(chat_id=chat_id, name=name)
         click_user = ClickupUser.objects.get(telegram_user=tel_user)
         # lets return avaiable commands
+        if click_user.reminder == True:
+            reminder_status = 'OFF'
+        else:
+            reminder_status = 'ON'
         keyboard = [[InlineKeyboardButton("Get Task", callback_data='task')],
-                    [InlineKeyboardButton("Set Task Reminder", callback_data='task_reminder')]]
+                    [InlineKeyboardButton(f"Set Task Reminder {reminder_status}", callback_data='task_reminder')]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         text = 'Please choose commands ⤵️:'
         bot.sendMessage(chat_id, text=text, reply_markup=reply_markup)
@@ -147,15 +151,6 @@ def get_task(bot, update):
         bot.sendMessage(chat_id, text=text)
 
 
-def help(bot, update):
-    name = update.message.chat.first_name
-    chat_id = update.effective_chat.id
-    text = '''{}, this bot is integrated into ClickUp application.
-type /start to initiate
-type /commands to see all commands'''.format(name)
-    bot.sendMessage(chat_id, text=text)
-
-
 def task_reminder(bot, update):
     if update.callback_query:
         name = update.callback_query.message.chat.first_name
@@ -179,6 +174,7 @@ def task_reminder(bot, update):
     except:
         text = '''🙅‍♂️ you need set your account first ⛔️'''
         bot.sendMessage(chat_id, text=text)
+    finally:
         return start(bot, update)
     
 
@@ -190,10 +186,10 @@ def do_echo(bot, update):
     mes = Message(telegram_user=tel_user, text=text)
     mes.save()
 
-    # lets return avaiable commands
+    # lets return avaiable command
     keyboard = [[InlineKeyboardButton("Start", callback_data='start')]]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    update.message.reply_text('Please choose commands ⤵️:', reply_markup=reply_markup)
+    update.message.reply_text('Please choose command ⤵️:', reply_markup=reply_markup)
 
 
 def login(bot, update):
@@ -225,7 +221,6 @@ def main():
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("login", login))
-    dp.add_handler(CommandHandler("help", help))
     dp.add_handler(CommandHandler("commands", commands))
     dp.add_handler(CommandHandler("task", get_task))
     dp.add_handler(CommandHandler("task_reminder", task_reminder))

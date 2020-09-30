@@ -21,6 +21,7 @@ class ClickupUser(models.Model):
     email = models.EmailField(max_length=200, null=True, blank=True)
     reg_code = models.CharField(max_length=48, null=True, blank=True)
     reg_token = models.CharField(max_length=48, null=True, blank=True)
+    reminder = models.BooleanField(default=False)
 
     def __str__(self):
         return f'Clickup user {self.username}'

@@ -25,7 +25,7 @@ class UserCodeRedirectView(RedirectView):
     def get(self, request):
         try:
             # fix click_user var to get requested users
-            last_login_mes = Message.objects.filter(text='loginget').last()
+            last_login_mes = Message.objects.filter(text='logingetloginget').last()
             tel_user = last_login_mes.telegram_user
             click_user = ClickupUser.objects.get(telegram_user=tel_user)
 

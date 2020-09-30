@@ -21,7 +21,7 @@ def send_message(message, chat_id):
 def daily_task_updater():
     click_users = ClickupUser.objects.all()
     for click_user in click_users:
-        if click_user.reg_token:
+        if click_user.reg_token and click_user.reminder == True:
             tel_user = click_user.telegram_user
             chat_id = tel_user.chat_id
             name = tel_user.name
@@ -83,12 +83,12 @@ def daily_task_updater():
 
 # for testing
 schedule.every(1).minutes.do(daily_task_updater)
-# for production
-schedule.every().monday.at("08:00").do(daily_task_updater)
-schedule.every().tuesday.at("08:00").do(daily_task_updater)
-schedule.every().wednesday.at("08:00").do(daily_task_updater)
-schedule.every().thursday.at("08:00").do(daily_task_updater)
-schedule.every().friday.at("08:00").do(daily_task_updater)
+# for production. note => -6 hours time difference 
+schedule.every().monday.at("03:00").do(daily_task_updater)
+schedule.every().tuesday.at("03:00").do(daily_task_updater)
+schedule.every().wednesday.at("03:00").do(daily_task_updater)
+schedule.every().thursday.at("03:00").do(daily_task_updater)
+schedule.every().friday.at("03:00").do(daily_task_updater)
 
 
 while True:

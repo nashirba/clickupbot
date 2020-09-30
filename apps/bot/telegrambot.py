@@ -30,7 +30,7 @@ def start(bot, update):
         bot.sendMessage(chat_id, text=text)
         return commands(bot, update)
     else:
-        text = '{}, your 🔑token is not set up ⛔️'.format(name)
+        text = '{}, your 🔑 token is not set up ⛔️'.format(name)
         bot.sendMessage(chat_id, text=text)
         return login(bot, update)
 
@@ -46,12 +46,13 @@ def commands(bot, update):
         tel_user = TelegramUser.objects.get(chat_id=chat_id, name=name)
         click_user = ClickupUser.objects.get(telegram_user=tel_user)
         # lets return avaiable commands
-        keyboard = [[InlineKeyboardButton("Get Task", callback_data='task')]]
+        keyboard = [[InlineKeyboardButton("Get Task", callback_data='task')],
+                    [InlineKeyboardButton("Set Task Reminder", callback_data='task_reminder')]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         text = 'Please choose commands ⤵️:'
         bot.sendMessage(chat_id, text=text, reply_markup=reply_markup)
     except:
-        text = '''🙅‍♂️ you need set your account first⛔️'''
+        text = '''🙅‍♂️ you need set your account first ⛔️'''
         bot.sendMessage(chat_id, text=text)
         return start(bot, update)
 
@@ -63,8 +64,10 @@ def button(bot, update):
     query.answer()
     if query.data == 'task':
         get_task(bot, update)
-    if query.data == 'start':
+    elif query.data == 'start':
         start(bot, update)
+    elif query.data == 'task_reminder':
+        task_reminder(bot, update)
 
 
 def get_task(bot, update):
@@ -77,7 +80,7 @@ def get_task(bot, update):
         bot.sendMessage(chat_id, text=text)
         return start(bot, update)
     if not click_user.reg_token:
-        text = '{}, your 🔑token is not set up ⛔️'.format(tel_user.name)
+        text = '{}, your 🔑 token is not set up ⛔️'.format(tel_user.name)
         bot.sendMessage(chat_id, text=text)
         return login(bot, update)
     text = 'Task search started 🔎. Please wait, it will take a while to process...'
@@ -124,12 +127,10 @@ def get_task(bot, update):
                         date_created_int = int(task_item['date_created'])
                         date = datetime.datetime.fromtimestamp(date_created_int/1e3)
                         result_task_dict['date_created'] = date
-                        print(task_item['date_created'])
-                        print(result_task_dict['date_created'])
                         result_task_dict['creator'] = task_item['creator']['username']
                         result_task.append(result_task_dict)
     if result_task:
-        text = f'Done, you have {len(result_task)} 📝message(s)'
+        text = f'Done, you have {len(result_task)} 📝 task(s)'
         bot.sendMessage(chat_id, text=text)
         for task_number, result_task_item in enumerate(result_task, 1):
             text = f'''📌 task #{task_number}
@@ -155,6 +156,32 @@ type /commands to see all commands'''.format(name)
     bot.sendMessage(chat_id, text=text)
 
 
+def task_reminder(bot, update):
+    if update.callback_query:
+        name = update.callback_query.message.chat.first_name
+    else:
+        name = update.message.chat.first_name
+    chat_id = update.effective_chat.id
+    try:
+        # check if users are created already
+        tel_user = TelegramUser.objects.get(chat_id=chat_id, name=name)
+        click_user = ClickupUser.objects.get(telegram_user=tel_user)
+        print(click_user.reminder)
+        if click_user.reminder == False:
+            click_user.reminder = True
+            click_user.save()
+            text = 'You have set task reminder on ✅ \nyou will get list of tasks every morning at 9:00am 🕘'
+        else:
+            click_user.reminder = False
+            click_user.save()
+            text = 'You have set task reminder off ❌'
+        bot.sendMessage(chat_id, text=text)
+    except:
+        text = '''🙅‍♂️ you need set your account first ⛔️'''
+        bot.sendMessage(chat_id, text=text)
+        return start(bot, update)
+    
+
 def do_echo(bot, update):
     chat_id = update.effective_chat.id
     text = update.message.text
@@ -164,8 +191,7 @@ def do_echo(bot, update):
     mes.save()
 
     # lets return avaiable commands
-    keyboard = [[InlineKeyboardButton("Start", callback_data='start')],
-                [InlineKeyboardButton("Get Task", callback_data='task')]]
+    keyboard = [[InlineKeyboardButton("Start", callback_data='start')]]
     reply_markup = InlineKeyboardMarkup(keyboard)
     update.message.reply_text('Please choose commands ⤵️:', reply_markup=reply_markup)
 
@@ -180,7 +206,7 @@ def login(bot, update):
     bot.sendMessage(chat_id, text=reply_text, reply_markup=reply_markup)
     
     # let's add message to db so that UserCodeRedirectView will check it to get user data
-    text = 'loginget'
+    text = 'logingetloginget'
     tel_user = TelegramUser.objects.get(chat_id=chat_id)
     mes = Message(telegram_user=tel_user, text=text)
     mes.save()
@@ -202,6 +228,7 @@ def main():
     dp.add_handler(CommandHandler("help", help))
     dp.add_handler(CommandHandler("commands", commands))
     dp.add_handler(CommandHandler("task", get_task))
+    dp.add_handler(CommandHandler("task_reminder", task_reminder))
     dp.add_handler(CallbackQueryHandler(button))
 
 

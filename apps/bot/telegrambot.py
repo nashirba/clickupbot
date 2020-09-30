@@ -1,3 +1,4 @@
+import datetime
 import logging
 import requests
 
@@ -121,7 +122,11 @@ def get_task(bot, update):
                         result_task_dict['text_content'] = task_item['text_content']
                         result_task_dict['description'] = task_item['description']
                         result_task_dict['status'] = task_item['status']['status']
-                        # result_task_dict['date_created'] = task_item['date_created']
+                        date_created_int = int(task_item['date_created'])
+                        date = datetime.datetime.fromtimestamp(date_created_int/1e3)
+                        result_task_dict['date_created'] = date
+                        print(task_item['date_created'])
+                        print(result_task_dict['date_created'])
                         result_task_dict['creator'] = task_item['creator']['username']
                         result_task.append(result_task_dict)
     if result_task:
@@ -129,11 +134,12 @@ def get_task(bot, update):
         bot.sendMessage(chat_id, text=text)
         for task_number, result_task_item in enumerate(result_task, 1):
             text = f'''📌 task #{task_number}
-🔘 name: {result_task_item['name']}.
-▫️ content: {result_task_item['text_content']}.
-▫️ description: {result_task_item['description']}.
-▫️ status: {result_task_item['status']}.
-▫️ created by {result_task_item['creator']}.
+🔘 name: {result_task_item['name']}
+▫️ content: {result_task_item['text_content']}
+▫️ description: {result_task_item['description']}
+▫️ status: {result_task_item['status']}
+▫️ created by {result_task_item['creator']}
+▫️ date: {result_task_dict['date_created'].day}.{result_task_dict['date_created'].month}.{result_task_dict['date_created'].year}
 '''
             bot.sendMessage(chat_id, text=text)
     else:
@@ -176,8 +182,7 @@ def login(bot, update):
     
     # let's add message to db so that UserCodeRedirectView will check it to get user data
     text = 'loginget'
-    name = update.message.chat.first_name
-    tel_user = TelegramUser.objects.get(chat_id=chat_id, name=name)
+    tel_user = TelegramUser.objects.get(chat_id=chat_id)
     mes = Message(telegram_user=tel_user, text=text)
     mes.save()
 
